@@ -1,5 +1,6 @@
 package com.groupon.maygupta.todo;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -22,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> itemsAdapter;
     ListView listItems;
     EditText textInput;
+    private final int REQUEST_CODE = 20;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +44,29 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+
+        listItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(MainActivity.this, EditItemActivity.class);
+
+                i.putExtra("item", todoItems.get(position));
+                i.putExtra("position", position);
+
+                startActivityForResult(i, REQUEST_CODE);
+            }
+        });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            String item = data.getExtras().getString("item");
+            int position = data.getIntExtra("position", 0);
+            todoItems.set(position, item);
+            itemsAdapter.notifyDataSetChanged();
+            writeItems();
+        }
     }
 
     public void populateArrayItems() {
