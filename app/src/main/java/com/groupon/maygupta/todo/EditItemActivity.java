@@ -12,6 +12,7 @@ import android.widget.EditText;
 public class EditItemActivity extends AppCompatActivity {
 
     private int position;
+    private String id;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,6 +21,7 @@ public class EditItemActivity extends AppCompatActivity {
 
         String item = getIntent().getStringExtra("item");
         position = getIntent().getIntExtra("position", 0);
+        id = getIntent().getStringExtra("id");
 
         EditText editTextInput = (EditText) findViewById(R.id.updateItem);
         editTextInput.setText(item);
@@ -55,6 +57,7 @@ public class EditItemActivity extends AppCompatActivity {
         Intent data = new Intent();
         data.putExtra("item", editTextInput.getText().toString());
         data.putExtra("position", position);
+        data.putExtra("id", id);
 
         setResult(RESULT_OK, data);
         finish();

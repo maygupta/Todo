@@ -11,11 +11,8 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,12 +20,18 @@ public class MainActivity extends AppCompatActivity {
     ArrayAdapter<String> itemsAdapter;
     ListView listItems;
     EditText textInput;
+    List<Todo> currentTodos;
     private final int REQUEST_CODE = 20;
+
+    TodosDatabaseHelper databaseHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        databaseHelper = TodosDatabaseHelper.getInstance(this);
+
         populateArrayItems();
         listItems = (ListView) findViewById(R.id.lvListItems);
         listItems.setAdapter(itemsAdapter);
@@ -40,7 +43,11 @@ public class MainActivity extends AppCompatActivity {
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 todoItems.remove(position);
                 itemsAdapter.notifyDataSetChanged();
-                writeItems();
+
+                // Delete entry from the database
+                databaseHelper.deleteTodo(currentTodos.get(position));
+                currentTodos.remove(position);
+
                 return false;
             }
         });
@@ -52,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
 
                 i.putExtra("item", todoItems.get(position));
                 i.putExtra("position", position);
+                i.putExtra("id", currentTodos.get(position).id);
 
                 startActivityForResult(i, REQUEST_CODE);
             }
@@ -65,44 +73,25 @@ public class MainActivity extends AppCompatActivity {
             int position = data.getIntExtra("position", 0);
             todoItems.set(position, item);
             itemsAdapter.notifyDataSetChanged();
-            writeItems();
+
+            // Update the entry in database
+            Todo currentTodo = currentTodos.get(position);
+            currentTodo.text = item;
+            databaseHelper.updateTodo(currentTodo);
         }
     }
 
     public void populateArrayItems() {
-        readItems();
+        currentTodos = databaseHelper.getAllTodos();
+
+        todoItems = new ArrayList<String>();
+        int index = 0;
+        for (Todo todo: currentTodos) {
+            todoItems.add(index, todo.text);
+            index++;
+        }
+
         itemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, todoItems);
-    }
-
-    private void readItems() {
-        File filesDir = getFilesDir();
-        File file = new File(filesDir, "todo.txt");
-
-        // Add file if it doesn't exists
-        if(!file.exists()){
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Assign contents of file to todoItems object
-        try {
-            todoItems = new ArrayList<String>(FileUtils.readLines(file));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void writeItems() {
-        File filesDir = getFilesDir();
-        File file = new File(filesDir, "todo.txt");
-        try {
-            FileUtils.writeLines(file, todoItems);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -129,7 +118,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void onAddItem(View view) {
         itemsAdapter.add(textInput.getText().toString());
+
+        Todo newTodo = new Todo();
+        newTodo.text = textInput.getText().toString();
+
+        long id = databaseHelper.addTodo(newTodo);
+        if ( id != -1 ) {
+            newTodo.id = Long.toString(id);
+            currentTodos.add(currentTodos.size(), newTodo);
+        }
+
         textInput.setText("");
-        writeItems();
     }
 }
