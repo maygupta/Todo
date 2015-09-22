@@ -56,7 +56,7 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
         String CREATE_TODOS_TABLE = "CREATE TABLE " + TABLE_TODOS +
                 "(" +
                     KEY_TODO_ID + " INTEGER PRIMARY KEY," + // Define a primary key
-                    KEY_TODO_TEXT + " TEXT" +
+                    KEY_TODO_TEXT + " TEXT," +
                     KEY_TODO_DUE_DATE + " TEXT" +
                 ")";
         db.execSQL(CREATE_TODOS_TABLE);
@@ -78,6 +78,7 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
         try {
             ContentValues values = new ContentValues();
             values.put(KEY_TODO_TEXT, todo.text);
+            values.put(KEY_TODO_DUE_DATE, todo.dueDate);
 
             todoId = db.insertOrThrow(TABLE_TODOS, null, values);
             db.setTransactionSuccessful();
@@ -97,6 +98,7 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
 
             ContentValues values = new ContentValues();
             values.put(KEY_TODO_TEXT, todo.text);
+            values.put(KEY_TODO_DUE_DATE, todo.dueDate);
 
             int rows = db.update(TABLE_TODOS, values, KEY_TODO_ID + "= ?", new String[]{todo.id});
             db.setTransactionSuccessful();
@@ -123,9 +125,8 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
         try {
             if (cursor.moveToFirst()) {
                 do {
-                    Todo newTodo = new Todo();
+                    Todo newTodo = new Todo(cursor.getString(cursor.getColumnIndex(KEY_TODO_TEXT)), cursor.getString(cursor.getColumnIndex(KEY_TODO_DUE_DATE)));
                     newTodo.id = cursor.getString(cursor.getColumnIndex(KEY_TODO_ID));
-                    newTodo.text = cursor.getString(cursor.getColumnIndex(KEY_TODO_TEXT));
 
                     todos.add(newTodo);
                 } while(cursor.moveToNext());

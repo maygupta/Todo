@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="40dp"
+    android:weightSum="1">
+
+    <TextView
+        android:id="@+id/itemText"
+        android:layout_width="wrap_content"
+        android:layout_height="37dp"
+        android:layout_weight="0.75"
+         />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="39dp"
+        android:id="@+id/itemDueDate"
+        android:onClick="showDatePickerDialog"
+        android:layout_gravity="right"
+        android:hint="Enter due date..."
+        android:layout_weight="0.25"
+        />
+
+</LinearLayout>

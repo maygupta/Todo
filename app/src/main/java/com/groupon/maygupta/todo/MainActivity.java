@@ -1,27 +1,38 @@
 package com.groupon.maygupta.todo;
 
+import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.DialogFragment;
 import android.content.Intent;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
+import android.widget.DatePicker;
+import android.widget.TextView;
 
-public class MainActivity extends AppCompatActivity {
+import org.w3c.dom.Text;
 
-    ArrayList<String> todoItems;
-    ArrayAdapter<String> itemsAdapter;
+
+public class MainActivity extends FragmentActivity implements DatePickerDialog.OnDateSetListener {
+
     ListView listItems;
     EditText textInput;
-    List<Todo> currentTodos;
+    ArrayList<Todo> currentTodosList;
+    Todo currentTodo;
     private final int REQUEST_CODE = 20;
+    TodoAdapter adapter;
 
     TodosDatabaseHelper databaseHelper;
 
@@ -34,19 +45,17 @@ public class MainActivity extends AppCompatActivity {
 
         populateArrayItems();
         listItems = (ListView) findViewById(R.id.lvListItems);
-        listItems.setAdapter(itemsAdapter);
+        listItems.setAdapter(adapter);
         textInput = (EditText) findViewById(R.id.etEditText);
 
         // Creating a long click listener
         listItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                todoItems.remove(position);
-                itemsAdapter.notifyDataSetChanged();
-
                 // Delete entry from the database
-                databaseHelper.deleteTodo(currentTodos.get(position));
-                currentTodos.remove(position);
+                databaseHelper.deleteTodo(currentTodosList.get(position));
+                currentTodosList.remove(position);
+                adapter.notifyDataSetChanged();
 
                 return false;
             }
@@ -57,9 +66,9 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(MainActivity.this, EditItemActivity.class);
 
-                i.putExtra("item", todoItems.get(position));
+                i.putExtra("item", currentTodosList.get(position).text);
                 i.putExtra("position", position);
-                i.putExtra("id", currentTodos.get(position).id);
+                i.putExtra("id", currentTodosList.get(position).id);
 
                 startActivityForResult(i, REQUEST_CODE);
             }
@@ -71,27 +80,20 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK) {
             String item = data.getExtras().getString("item");
             int position = data.getIntExtra("position", 0);
-            todoItems.set(position, item);
-            itemsAdapter.notifyDataSetChanged();
+
+            Todo currentTodo = currentTodosList.get(position);
+            currentTodo.text = item;
 
             // Update the entry in database
-            Todo currentTodo = currentTodos.get(position);
-            currentTodo.text = item;
             databaseHelper.updateTodo(currentTodo);
+
+            adapter.notifyDataSetChanged();
         }
     }
 
     public void populateArrayItems() {
-        currentTodos = databaseHelper.getAllTodos();
-
-        todoItems = new ArrayList<String>();
-        int index = 0;
-        for (Todo todo: currentTodos) {
-            todoItems.add(index, todo.text);
-            index++;
-        }
-
-        itemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, todoItems);
+        currentTodosList = new ArrayList<Todo>(databaseHelper.getAllTodos());
+        adapter = new TodoAdapter(this, currentTodosList);
     }
 
     @Override
@@ -117,17 +119,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onAddItem(View view) {
-        itemsAdapter.add(textInput.getText().toString());
-
-        Todo newTodo = new Todo();
-        newTodo.text = textInput.getText().toString();
+        Todo newTodo = new Todo(textInput.getText().toString(), "");
 
         long id = databaseHelper.addTodo(newTodo);
         if ( id != -1 ) {
             newTodo.id = Long.toString(id);
-            currentTodos.add(currentTodos.size(), newTodo);
+            currentTodosList.add(currentTodosList.size(), newTodo);
+            adapter.notifyDataSetChanged();
         }
 
         textInput.setText("");
     }
+
+    public void showDatePickerDialog(View v) {
+        int position = (int) v.getTag();
+        currentTodo = currentTodosList.get(position);
+        DialogFragment newFragment = new DatePickerFragment();
+        newFragment.show(this.getFragmentManager(), "datePicker");
+    }
+
+    @Override
+    public void onDateSet(DatePicker view, int year, int month, int day) {
+        currentTodo.dueDate = String.format("%d-%d-%d", day, month + 1, year);
+        databaseHelper.updateTodo(currentTodo);
+        adapter.notifyDataSetChanged();
+    }
+
 }
