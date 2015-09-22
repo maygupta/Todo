@@ -38,6 +38,7 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
         if (todo.dueDate != null) {
             itemDueDate.setText(todo.dueDate);
         }
+        convertView.setTag(position);
         return convertView;
     }
 

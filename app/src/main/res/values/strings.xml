@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">SimpleTodo</string>
+    <string name="app_name">Todo Manager</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -7,4 +7,6 @@
     <string name="add_item">Add a new item</string>
     <string name="title_activity_edit_item">Edit Item</string>
     <string name="save">Save</string>
+    <string name="todo">Todo</string>
+    <string name="dueDate">Due Date</string>
 </resources>

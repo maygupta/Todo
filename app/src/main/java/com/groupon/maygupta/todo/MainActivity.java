@@ -1,34 +1,23 @@
 package com.groupon.maygupta.todo;
 
-import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.DialogFragment;
+
+import android.app.FragmentManager;
 import android.content.Intent;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-import android.widget.LinearLayout;
+
 import android.widget.ListView;
 
 import java.util.ArrayList;
-import java.util.List;
-import android.widget.DatePicker;
-import android.widget.TextView;
-
-import org.w3c.dom.Text;
 
 
-public class MainActivity extends FragmentActivity implements DatePickerDialog.OnDateSetListener {
+public class MainActivity extends AppCompatActivity {
 
     ListView listItems;
-    EditText textInput;
     ArrayList<Todo> currentTodosList;
     Todo currentTodo;
     private final int REQUEST_CODE = 20;
@@ -46,7 +35,7 @@ public class MainActivity extends FragmentActivity implements DatePickerDialog.O
         populateArrayItems();
         listItems = (ListView) findViewById(R.id.lvListItems);
         listItems.setAdapter(adapter);
-        textInput = (EditText) findViewById(R.id.etEditText);
+
 
         // Creating a long click listener
         listItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -64,15 +53,50 @@ public class MainActivity extends FragmentActivity implements DatePickerDialog.O
         listItems.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent i = new Intent(MainActivity.this, EditItemActivity.class);
-
-                i.putExtra("item", currentTodosList.get(position).text);
-                i.putExtra("position", position);
-                i.putExtra("id", currentTodosList.get(position).id);
-
-                startActivityForResult(i, REQUEST_CODE);
+                showDialog(view, false);
             }
         });
+    }
+
+    public void showDialog(View v, boolean isNewTodo) {
+        FragmentManager manager = getFragmentManager();
+        TodoFragment fragment = new TodoFragment();
+        fragment.setDialogResult(new TodoFragment.OnDialogResult() {
+            @Override
+            public void finish(String text, String dueDate, int position) {
+                if (position == -1) {
+                    Todo newTodo = new Todo(text, dueDate);
+                    currentTodosList.add(currentTodosList.size(), newTodo);
+                    databaseHelper.addTodo(newTodo);
+                } else {
+                    currentTodo = currentTodosList.get(position);
+                    currentTodo.text = text;
+                    currentTodo.dueDate = dueDate;
+                    databaseHelper.updateTodo(currentTodo);
+                }
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void delete(int position) {
+                currentTodo = currentTodosList.get(position);
+                databaseHelper.deleteTodo(currentTodo);
+                currentTodosList.remove(position);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        if (isNewTodo == false) {
+            Bundle args = new Bundle();
+            int position = (int) v.getTag();
+            args.putInt("position", position);
+            currentTodo = currentTodosList.get(position);
+            args.putString("text", currentTodo.text);
+            args.putString("dueDate", currentTodo.dueDate);
+            fragment.setArguments(args);
+        }
+
+        fragment.show(manager, "TodoDialog");
     }
 
     @Override
@@ -118,31 +142,8 @@ public class MainActivity extends FragmentActivity implements DatePickerDialog.O
         return super.onOptionsItemSelected(item);
     }
 
-    public void onAddItem(View view) {
-        Todo newTodo = new Todo(textInput.getText().toString(), "");
-
-        long id = databaseHelper.addTodo(newTodo);
-        if ( id != -1 ) {
-            newTodo.id = Long.toString(id);
-            currentTodosList.add(currentTodosList.size(), newTodo);
-            adapter.notifyDataSetChanged();
-        }
-
-        textInput.setText("");
-    }
-
-    public void showDatePickerDialog(View v) {
-        int position = (int) v.getTag();
-        currentTodo = currentTodosList.get(position);
-        DialogFragment newFragment = new DatePickerFragment();
-        newFragment.show(this.getFragmentManager(), "datePicker");
-    }
-
-    @Override
-    public void onDateSet(DatePicker view, int year, int month, int day) {
-        currentTodo.dueDate = String.format("%d-%d-%d", day, month + 1, year);
-        databaseHelper.updateTodo(currentTodo);
-        adapter.notifyDataSetChanged();
+    public void onClickAdd(View view) {
+        showDialog(view, true);
     }
 
 }
