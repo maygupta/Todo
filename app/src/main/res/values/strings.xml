@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Todo Manager</string>
+    <string name="app_name">ToooDo</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -9,4 +9,11 @@
     <string name="save">Save</string>
     <string name="todo">Todo</string>
     <string name="dueDate">Due Date</string>
+    <string name="priority_label">Priority</string>
+
+    <string-array name="priority">
+        <item>High</item>
+        <item>Medium</item>
+        <item>Low</item>
+    </string-array>
 </resources>

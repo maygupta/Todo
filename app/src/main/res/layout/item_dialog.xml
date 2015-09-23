@@ -11,8 +11,7 @@
         android:text="@string/todo"
         android:layout_weight="0.05"
         android:layout_marginLeft="10dp"
-        android:textStyle="bold"
-        android:layout_marginTop="10dp" />
+        android:textStyle="bold" />
     <EditText
         android:id="@+id/add_todo_text"
         android:hint="Add a todo..."
@@ -35,18 +34,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/add_todo_due_date"
-        android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
         android:calendarViewShown="false"
         android:datePickerMode="spinner"
         />
+
+    <TextView
+        android:layout_width="106dp"
+        android:layout_height="wrap_content"
+        android:text="@string/priority_label"
+        android:layout_marginLeft="10dp"
+        android:textStyle="bold"
+         />
+
+    <Spinner
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:id="@+id/add_todo_priority"
+        android:entries="@array/priority"
+    />
 
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginTop="10dp">
+        android:layout_marginTop="20dp">
 
 
         <Button

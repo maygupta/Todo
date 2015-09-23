@@ -1,6 +1,7 @@
 package com.groupon.maygupta.todo;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.LayerDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,11 +33,21 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
 
         TextView itemText = (TextView) convertView.findViewById(R.id.itemText);
         TextView itemDueDate = (TextView) convertView.findViewById(R.id.itemDueDate);
+        TextView itemPriority = (TextView) convertView.findViewById(R.id.itemPriority);
         itemDueDate.setTag(position);
 
         itemText.setText(todo.text);
         if (todo.dueDate != null) {
             itemDueDate.setText(todo.dueDate);
+        }
+        if (todo.priority != null) {
+            itemPriority.setText(todo.priority);
+
+            switch (todo.priority) {
+                case "High": itemPriority.setTextColor(Color.RED); break;
+                case "Medium": itemPriority.setTextColor(Color.rgb(236,141,22)); break;
+                case "Low": itemPriority.setTextColor(Color.rgb(110,216,10)); break;
+            }
         }
         convertView.setTag(position);
         return convertView;

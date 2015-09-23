@@ -63,15 +63,16 @@ public class MainActivity extends AppCompatActivity {
         TodoFragment fragment = new TodoFragment();
         fragment.setDialogResult(new TodoFragment.OnDialogResult() {
             @Override
-            public void finish(String text, String dueDate, int position) {
+            public void finish(String text, String dueDate, String priority, int position) {
                 if (position == -1) {
-                    Todo newTodo = new Todo(text, dueDate);
+                    Todo newTodo = new Todo(text, dueDate, priority);
                     currentTodosList.add(currentTodosList.size(), newTodo);
                     databaseHelper.addTodo(newTodo);
                 } else {
                     currentTodo = currentTodosList.get(position);
                     currentTodo.text = text;
                     currentTodo.dueDate = dueDate;
+                    currentTodo.priority = priority;
                     databaseHelper.updateTodo(currentTodo);
                 }
                 adapter.notifyDataSetChanged();
@@ -93,26 +94,11 @@ public class MainActivity extends AppCompatActivity {
             currentTodo = currentTodosList.get(position);
             args.putString("text", currentTodo.text);
             args.putString("dueDate", currentTodo.dueDate);
+            args.putString("priority", currentTodo.priority);
             fragment.setArguments(args);
         }
 
         fragment.show(manager, "TodoDialog");
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
-            String item = data.getExtras().getString("item");
-            int position = data.getIntExtra("position", 0);
-
-            Todo currentTodo = currentTodosList.get(position);
-            currentTodo.text = item;
-
-            // Update the entry in database
-            databaseHelper.updateTodo(currentTodo);
-
-            adapter.notifyDataSetChanged();
-        }
     }
 
     public void populateArrayItems() {

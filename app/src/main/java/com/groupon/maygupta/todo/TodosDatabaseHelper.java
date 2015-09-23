@@ -31,6 +31,7 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_TODO_ID = "id";
     private static final String KEY_TODO_TEXT = "text";
     private static final String KEY_TODO_DUE_DATE = "dueDate";
+    private static final String KEY_TODO_PRIORITY = "priority";
 
 
     // Singleton Pattern
@@ -57,7 +58,8 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
                 "(" +
                     KEY_TODO_ID + " INTEGER PRIMARY KEY," + // Define a primary key
                     KEY_TODO_TEXT + " TEXT," +
-                    KEY_TODO_DUE_DATE + " TEXT" +
+                    KEY_TODO_DUE_DATE + " TEXT," +
+                    KEY_TODO_PRIORITY + " TEXT" +
                 ")";
         db.execSQL(CREATE_TODOS_TABLE);
     }
@@ -79,6 +81,7 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put(KEY_TODO_TEXT, todo.text);
             values.put(KEY_TODO_DUE_DATE, todo.dueDate);
+            values.put(KEY_TODO_PRIORITY, todo.priority);
 
             todoId = db.insertOrThrow(TABLE_TODOS, null, values);
             db.setTransactionSuccessful();
@@ -99,6 +102,7 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put(KEY_TODO_TEXT, todo.text);
             values.put(KEY_TODO_DUE_DATE, todo.dueDate);
+            values.put(KEY_TODO_PRIORITY, todo.priority);
 
             int rows = db.update(TABLE_TODOS, values, KEY_TODO_ID + "= ?", new String[]{todo.id});
             db.setTransactionSuccessful();
@@ -125,7 +129,10 @@ public class TodosDatabaseHelper extends SQLiteOpenHelper {
         try {
             if (cursor.moveToFirst()) {
                 do {
-                    Todo newTodo = new Todo(cursor.getString(cursor.getColumnIndex(KEY_TODO_TEXT)), cursor.getString(cursor.getColumnIndex(KEY_TODO_DUE_DATE)));
+                    Todo newTodo = new Todo(cursor.getString(cursor.getColumnIndex(KEY_TODO_TEXT)),
+                            cursor.getString(cursor.getColumnIndex(KEY_TODO_DUE_DATE)),
+                            cursor.getString(cursor.getColumnIndex(KEY_TODO_PRIORITY))
+                    );
                     newTodo.id = cursor.getString(cursor.getColumnIndex(KEY_TODO_ID));
 
                     todos.add(newTodo);
