@@ -2,17 +2,14 @@ package com.groupon.maygupta.todo;
 
 
 import android.app.FragmentManager;
-import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
-
 import android.widget.ListView;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -20,7 +17,6 @@ public class MainActivity extends AppCompatActivity {
     ListView listItems;
     ArrayList<Todo> currentTodosList;
     Todo currentTodo;
-    private final int REQUEST_CODE = 20;
     TodoAdapter adapter;
 
     TodosDatabaseHelper databaseHelper;
@@ -44,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
                 // Delete entry from the database
                 databaseHelper.deleteTodo(currentTodosList.get(position));
                 currentTodosList.remove(position);
+                arrangeTodosByPriority();
                 adapter.notifyDataSetChanged();
 
                 return false;
@@ -63,18 +60,18 @@ public class MainActivity extends AppCompatActivity {
         TodoFragment fragment = new TodoFragment();
         fragment.setDialogResult(new TodoFragment.OnDialogResult() {
             @Override
-            public void finish(String text, String dueDate, String priority, int position) {
+            public void finish(Todo todo, int position) {
                 if (position == -1) {
-                    Todo newTodo = new Todo(text, dueDate, priority);
-                    currentTodosList.add(currentTodosList.size(), newTodo);
-                    databaseHelper.addTodo(newTodo);
+                    currentTodosList.add(currentTodosList.size(), todo);
+                    databaseHelper.addTodo(todo);
                 } else {
                     currentTodo = currentTodosList.get(position);
-                    currentTodo.text = text;
-                    currentTodo.dueDate = dueDate;
-                    currentTodo.priority = priority;
+                    currentTodo.text = todo.text;
+                    currentTodo.dueDate = todo.dueDate;
+                    currentTodo.priority = todo.priority;
                     databaseHelper.updateTodo(currentTodo);
                 }
+                arrangeTodosByPriority();
                 adapter.notifyDataSetChanged();
             }
 
@@ -83,10 +80,12 @@ public class MainActivity extends AppCompatActivity {
                 currentTodo = currentTodosList.get(position);
                 databaseHelper.deleteTodo(currentTodo);
                 currentTodosList.remove(position);
+                arrangeTodosByPriority();
                 adapter.notifyDataSetChanged();
             }
         });
 
+        // If already existing todo then send data of todo to fragment
         if (isNewTodo == false) {
             Bundle args = new Bundle();
             int position = (int) v.getTag();
@@ -103,33 +102,16 @@ public class MainActivity extends AppCompatActivity {
 
     public void populateArrayItems() {
         currentTodosList = new ArrayList<Todo>(databaseHelper.getAllTodos());
+        arrangeTodosByPriority();
         adapter = new TodoAdapter(this, currentTodosList);
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public void onClickAdd(View view) {
         showDialog(view, true);
+    }
+
+    public void arrangeTodosByPriority() {
+        Collections.sort(currentTodosList, new Todo.TodoComparator());
     }
 
 }

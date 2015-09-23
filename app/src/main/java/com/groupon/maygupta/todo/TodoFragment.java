@@ -2,7 +2,6 @@ package com.groupon.maygupta.todo;
 
 import android.app.DialogFragment;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,8 +10,6 @@ import android.widget.DatePicker;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by maygupta on 9/21/15.
@@ -23,9 +20,7 @@ public class TodoFragment extends DialogFragment {
     private View view;
     private boolean isNewTodo;
     private int position;
-    private String text;
-    private String dueDateStr;
-    private String priority;
+    Todo todo;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -33,9 +28,7 @@ public class TodoFragment extends DialogFragment {
         Bundle args = getArguments();
         if (args != null) {
             position = args.getInt("position");
-            text = args.getString("text");
-            dueDateStr = args.getString("dueDate");
-            priority = args.getString("priority");
+            todo = new Todo(args.getString("text"),args.getString("dueDate"),args.getString("priority"));
             isNewTodo = false;
         } else {
             isNewTodo = true;
@@ -51,15 +44,15 @@ public class TodoFragment extends DialogFragment {
 
         if (isNewTodo == false) {
             TextView todoTextView = (TextView) view.findViewById(R.id.add_todo_text);
-            todoTextView.setText(text);
+            todoTextView.setText(todo.text);
 
             DatePicker datePickerView = (DatePicker) view.findViewById(R.id.add_todo_due_date);
-            if (isValidDate()) {
-                datePickerView.updateDate(getYear(), getMonth() - 1, getDate());
+            if (todo.isValidDate()) {
+                datePickerView.updateDate(todo.getYear(), todo.getMonth() - 1, todo.getDate());
             }
 
             Spinner priorityView = (Spinner) view.findViewById(R.id.add_todo_priority);
-            priorityView.setSelection(Todo.getPriorityIndex(priority));
+            priorityView.setSelection(Todo.getPriorityIndex(todo.priority));
 
             Button btn = (Button) view.findViewById(R.id.delete);
             btn.setVisibility(View.VISIBLE);
@@ -69,22 +62,9 @@ public class TodoFragment extends DialogFragment {
         return view;
     }
 
-    public boolean isValidDate() {
-        return dueDateStr.split("-").length == 3;
-    }
-
-    public int getDate() {
-        return Integer.parseInt(dueDateStr.split("-")[0]);
-    }
-
-    public int getMonth() {
-        return Integer.parseInt(dueDateStr.split("-")[1]);
-    }
-
-    public int getYear() {
-        return Integer.parseInt(dueDateStr.split("-")[2]);
-    }
-
+    /**
+     * LISTENERS FOR ACTION BUTTONS
+     **/
     private class SaveListener implements android.view.View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -92,7 +72,8 @@ public class TodoFragment extends DialogFragment {
                 TextView text = (TextView) view.findViewById(R.id.add_todo_text);
                 DatePicker dueDate = (DatePicker) view.findViewById(R.id.add_todo_due_date);
                 Spinner priority = (Spinner) view.findViewById(R.id.add_todo_priority);
-                mDialogResult.finish(text.getText().toString(), parseDatePicker(dueDate), priority.getSelectedItem().toString() , position );
+                Todo todo = new Todo(text.getText().toString(), parseDatePicker(dueDate), priority.getSelectedItem().toString());
+                mDialogResult.finish(todo , position );
             }
             TodoFragment.this.dismiss();
         }
@@ -108,10 +89,6 @@ public class TodoFragment extends DialogFragment {
         }
     }
 
-    private String parseDatePicker(DatePicker d) {
-        return String.format("%d-%d-%d", d.getDayOfMonth(), d.getMonth()+1, d.getYear());
-    }
-
     private class CancelListener implements android.view.View.OnClickListener {
         @Override
         public void onClick(View v) {
@@ -123,8 +100,12 @@ public class TodoFragment extends DialogFragment {
         mDialogResult = dialogResult;
     }
 
+    private String parseDatePicker(DatePicker d) {
+        return String.format("%d-%d-%d", d.getDayOfMonth(), d.getMonth()+1, d.getYear());
+    }
+
     public interface OnDialogResult {
-        void finish(String text, String dueDate, String priority, int position);
+        void finish(Todo todo, int position);
         void delete(int position);
     }
 
