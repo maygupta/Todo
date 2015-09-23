@@ -11,6 +11,9 @@ public class Todo {
     public String text;
     public String dueDate;
     public String priority;
+    public static final String PRIORITY_HIGH = "High";
+    public static final String PRIORITY_MEDIUM = "Medium";
+    public static final String PRIORITY_LOW = "Low";
 
     public Todo(String text, String dueDate, String priority) {
         this.text = text;
@@ -20,9 +23,9 @@ public class Todo {
 
     public static int getPriorityIndex(String priority) {
         switch (priority) {
-            case "High": return 0;
-            case "Medium": return 1;
-            case "Low": return 2;
+            case PRIORITY_HIGH: return 0;
+            case PRIORITY_MEDIUM: return 1;
+            case PRIORITY_LOW: return 2;
         }
         return -1;
     }
@@ -49,10 +52,10 @@ public class Todo {
         public int compare(Todo lhs,
                            Todo rhs) {
             if(lhs.priority.equals(rhs.priority)) return 0;
-            if(lhs.priority.equals("High")) return -1;
-            if(lhs.priority.equals("Low")) return 1;
+            if(lhs.priority.equals(PRIORITY_HIGH)) return -1;
+            if(lhs.priority.equals(PRIORITY_LOW)) return 1;
 
-            if(rhs.priority.equals("High")) return 1;
+            if(rhs.priority.equals(PRIORITY_HIGH)) return 1;
             return -1;
         }
 

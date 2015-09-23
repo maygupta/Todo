@@ -2,16 +2,13 @@ package com.groupon.maygupta.todo;
 
 import android.content.Context;
 import android.graphics.Color;
-import android.graphics.drawable.LayerDrawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.DatePicker;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by maygupta on 9/21/15.
@@ -44,9 +41,9 @@ public class TodoAdapter extends ArrayAdapter<Todo> {
             itemPriority.setText(todo.priority);
 
             switch (todo.priority) {
-                case "High": itemPriority.setTextColor(Color.RED); break;
-                case "Medium": itemPriority.setTextColor(Color.rgb(236,141,22)); break;
-                case "Low": itemPriority.setTextColor(Color.rgb(110,216,10)); break;
+                case Todo.PRIORITY_HIGH: itemPriority.setTextColor(Color.RED); break;
+                case Todo.PRIORITY_MEDIUM: itemPriority.setTextColor(Color.rgb(236,141,22)); break;
+                case Todo.PRIORITY_LOW: itemPriority.setTextColor(Color.rgb(110,216,10)); break;
             }
         }
         convertView.setTag(position);
