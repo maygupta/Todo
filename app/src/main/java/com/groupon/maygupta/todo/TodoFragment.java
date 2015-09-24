@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.Spinner;
@@ -42,8 +43,9 @@ public class TodoFragment extends DialogFragment {
         view.findViewById(R.id.save).setOnClickListener(new SaveListener());
         view.findViewById(R.id.cancel).setOnClickListener(new CancelListener());
 
+        TextView todoTextView = (TextView) view.findViewById(R.id.add_todo_text);
         if (isNewTodo == false) {
-            TextView todoTextView = (TextView) view.findViewById(R.id.add_todo_text);
+
             todoTextView.setText(todo.text);
 
             DatePicker datePickerView = (DatePicker) view.findViewById(R.id.add_todo_due_date);
@@ -57,6 +59,10 @@ public class TodoFragment extends DialogFragment {
             Button btn = (Button) view.findViewById(R.id.delete);
             btn.setVisibility(View.VISIBLE);
             btn.setOnClickListener(new DeleteListener());
+        } else {
+            todoTextView.setFocusable(true);
+            todoTextView.requestFocus();
+            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         }
 
         return view;
